@@ -54,6 +54,10 @@ echo "Removing resume hook"
 sudo rm "$MKINITCPIO_CONF"
 
 echo "Regenerating initramfs..."
-sudo limine-mkinitcpio
+if command -v limine-mkinitcpio &>/dev/null; then
+  sudo limine-mkinitcpio
+else
+  sudo mkinitcpio -P
+fi
 
 echo "Hibernation removed"

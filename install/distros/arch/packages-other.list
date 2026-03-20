@@ -15,9 +15,10 @@ iwd
 jdk-openjdk
 libpulse
 libsass
-limine
-limine-mkinitcpio-hook
-limine-snapper-sync
+# Bootloader (optional - only if using Limine instead of systemd-boot/grub)
+# limine
+# limine-mkinitcpio-hook
+# limine-snapper-sync
 linux
 linux-firmware
 linux-headers
@@ -26,7 +27,8 @@ pipewire-alsa
 pipewire-jack
 pipewire-pulse
 sassc
-snapper
+# Snapshots (optional - only if using Btrfs with snapper)
+# snapper
 webp-pixbuf-loader
 wget
 yay-debug

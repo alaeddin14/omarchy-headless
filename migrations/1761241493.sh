@@ -1,5 +1,5 @@
 echo "Cleanup extra UKI if needed to prevent errors"
-if [[ -f /boot/EFI/linux/omarchy_linux.efi ]] && [[ -f /boot/EFI/linux/$(cat /etc/machine-id)_linux.efi ]]; then
+if omarchy-cmd-present limine && [[ -f /boot/EFI/linux/omarchy_linux.efi ]] && [[ -f /boot/EFI/linux/$(cat /etc/machine-id)_linux.efi ]]; then
   sudo rm -f /boot/EFI/Linux/$(cat /etc/machine-id)_linux.efi
 
   if grep -q "/boot/EFI/Linux/$(cat /etc/machine-id)_linux.efi" /boot/limine.conf; then

@@ -29,6 +29,11 @@ create)
   echo
   ;;
 restore)
-  sudo limine-snapper-restore
+  if command -v limine-snapper-restore &>/dev/null; then
+    sudo limine-snapper-restore
+  else
+    echo "limine-snapper-restore is not installed. Restore from boot menu is not available." >&2
+    exit 1
+  fi
   ;;
 esac

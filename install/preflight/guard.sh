@@ -36,11 +36,15 @@ if pacman -Qe gnome-shell &>/dev/null || pacman -Qe plasma-desktop &>/dev/null; 
   abort "Fresh + Vanilla Arch"
 fi
 
-# Must have limine installed
-command -v limine &>/dev/null || abort "Limine bootloader"
+# Warn if Limine is not installed (snapper boot entries won't work)
+if ! command -v limine &>/dev/null; then
+  echo -e "\e[33mNote: Limine not detected. Snapshot boot entries will not be available.\e[0m"
+fi
 
-# Must have btrfs root filesystem
-[[ $(findmnt -n -o FSTYPE /) = "btrfs" ]] || abort "Btrfs root filesystem" 
+# Warn if not using Btrfs (snapper snapshots won't work)
+if [[ $(findmnt -n -o FSTYPE /) != "btrfs" ]]; then
+  echo -e "\e[33mNote: Btrfs not detected. Snapper snapshots will not be available.\e[0m"
+fi
 
 # Cleared all guards
 echo "Guards: OK"

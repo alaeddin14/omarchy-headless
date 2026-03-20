@@ -15,6 +15,6 @@ echo '[[ -f ~/.bashrc ]] && . ~/.bashrc' | tee ~/.bash_profile >/dev/null
 
 $(bash $OMARCHY_PATH/install/config/theme.sh)
 
-omarchy-refresh-limine
-omarchy-refresh-plymouth
+command -v limine &>/dev/null && omarchy-refresh-limine
+command -v plymouth &>/dev/null && omarchy-refresh-plymouth
 omarchy-nvim-setup
