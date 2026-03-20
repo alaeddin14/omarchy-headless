@@ -9,11 +9,50 @@ mkdir -p "$STATE_DIR"
 # Skipped migrations are tracked separately
 mkdir -p "$STATE_DIR/skipped"
 
+# Check if this is a headless installation
+HEADLESS_MODE=false
+if [[ -f "$STATE_DIR/headless" ]]; then
+  HEADLESS_MODE=true
+fi
+
+# GUI-related patterns that should be skipped on headless
+GUI_PATTERNS=(
+  "hyprland"
+  "waybar"
+  "walker"
+  "mako"
+  "gsettings"
+  "blueberry"
+  "pavucontrol"
+  "sddm"
+  "plymouth"
+  "uwsm"
+  "swayosd"
+)
+
+# Check if a migration is GUI-related
+is_gui_migration() {
+  local file="$1"
+  for pattern in "${GUI_PATTERNS[@]}"; do
+    if grep -qi "$pattern" "$file" 2>/dev/null; then
+      return 0
+    fi
+  done
+  return 1
+}
+
 # Run any pending migrations
 for file in ~/.local/share/omarchy/migrations/*.sh; do
   filename=$(basename "$file")
 
   if [[ ! -f $STATE_DIR/$filename && ! -f $STATE_DIR/skipped/$filename ]]; then
+    # Skip GUI migrations on headless systems
+    if [[ $HEADLESS_MODE == true ]] && is_gui_migration "$file"; then
+      echo -e "\e[33m\nSkipping GUI migration (${filename%.sh}) - not applicable to headless\e[0m"
+      touch "$STATE_DIR/skipped/$filename"
+      continue
+    fi
+
     echo -e "\e[32m\nRunning migration (${filename%.sh})\e[0m"
 
     if bash $file; then

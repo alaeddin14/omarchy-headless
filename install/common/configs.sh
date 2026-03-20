@@ -48,6 +48,13 @@ install_bash_config() {
   
   echo "⚙️  Setting up bash configuration..."
   
+  # Create headless marker file for migration runner
+  if [[ -n $OMARCHY_HEADLESS ]]; then
+    mkdir -p ~/.local/state/omarchy
+    touch ~/.local/state/omarchy/headless
+    echo "  Marked installation as headless"
+  fi
+  
   # Create ~/.local/bin directory and env file for PATH setup
   echo "  Creating ~/.local/bin and env file..."
   mkdir -p ~/.local/bin
