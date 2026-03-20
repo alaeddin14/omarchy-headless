@@ -15,6 +15,37 @@ if [[ -f "$STATE_DIR/headless" ]]; then
   HEADLESS_MODE=true
 fi
 
+# GUI/headless-specific commands that don't exist on headless
+# These commands only make sense on desktop systems with GUI components
+GUI_ONLY_COMMANDS=(
+  "omarchy-restart-swayosd"
+  "omarchy-refresh-hypridle"
+  "omarchy-refresh-hyprland"
+  "omarchy-refresh-waybar"
+  "omarchy-refresh-walker"
+  "omarchy-refresh-mako"
+  "omarchy-restart-waybar"
+  "omarchy-restart-walker"
+  "omarchy-restart-mako"
+  "omarchy-restart-hyprland"
+  "omarchy-restart-terminal"
+  "omarchy-refresh-sddm"
+  "omarchy-refresh-plymouth"
+  "omarchy-refresh-applications"
+  "omarchy-refresh-limine"
+)
+
+# Check if a migration requires commands not available on headless
+uses_gui_only_commands() {
+  local file="$1"
+  for cmd in "${GUI_ONLY_COMMANDS[@]}"; do
+    if grep -qE "\b${cmd//-/\\-}\b" "$file" 2>/dev/null; then
+      return 0
+    fi
+  done
+  return 1
+}
+
 # Check if a migration requires interactive input (TUI/dialogs)
 is_interactive_migration() {
   local file="$1"
@@ -30,11 +61,21 @@ for file in ~/.local/share/omarchy/migrations/*.sh; do
   filename=$(basename "$file")
 
   if [[ ! -f $STATE_DIR/$filename && ! -f $STATE_DIR/skipped/$filename ]]; then
-    # Skip interactive migrations on headless systems (no TTY available)
-    if [[ $HEADLESS_MODE == true ]] && is_interactive_migration "$file"; then
-      echo -e "\e[33m\nSkipping interactive migration (${filename%.sh}) - not supported on headless\e[0m"
-      touch "$STATE_DIR/skipped/$filename"
-      continue
+    # Skip migrations on headless that:
+    # 1. Use GUI-only commands that don't exist on headless
+    # 2. Require interactive input (no TTY available)
+    if [[ $HEADLESS_MODE == true ]]; then
+      if uses_gui_only_commands "$file"; then
+        echo -e "\e[33m\nSkipping migration (${filename%.sh}) - requires GUI-only commands not available on headless\e[0m"
+        touch "$STATE_DIR/skipped/$filename"
+        continue
+      fi
+      
+      if is_interactive_migration "$file"; then
+        echo -e "\e[33m\nSkipping interactive migration (${filename%.sh}) - not supported on headless\e[0m"
+        touch "$STATE_DIR/skipped/$filename"
+        continue
+      fi
     fi
 
     echo -e "\e[32m\nRunning migration (${filename%.sh})\e[0m"
