@@ -16,7 +16,6 @@ if [[ -f "$STATE_DIR/headless" ]]; then
 fi
 
 # GUI/headless-specific commands that don't exist on headless
-# These commands only make sense on desktop systems with GUI components
 GUI_ONLY_COMMANDS=(
   "omarchy-restart-swayosd"
   "omarchy-refresh-hypridle"
@@ -35,11 +34,50 @@ GUI_ONLY_COMMANDS=(
   "omarchy-refresh-limine"
 )
 
+# GUI packages that shouldn't be installed on headless
+GUI_PACKAGES=(
+  "sddm"
+  "plymouth"
+  "hyprland"
+  "waybar"
+)
+
+# GUI services that don't exist on headless
+GUI_SERVICES=(
+  "omarchy-seamless-login"
+  "plymouth-quit"
+  "sddm"
+  "hyprland"
+)
+
 # Check if a migration requires commands not available on headless
 uses_gui_only_commands() {
   local file="$1"
   for cmd in "${GUI_ONLY_COMMANDS[@]}"; do
     if grep -qE "\b${cmd//-/\\-}\b" "$file" 2>/dev/null; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+# Check if a migration tries to install GUI packages
+installs_gui_packages() {
+  local file="$1"
+  for pkg in "${GUI_PACKAGES[@]}"; do
+    # Check for omarchy-pkg-add or pacman installing GUI packages
+    if grep -qE "(omarchy-pkg-add|pacman\s+.*-S).*$pkg\b" "$file" 2>/dev/null; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+# Check if a migration references GUI services
+references_gui_services() {
+  local file="$1"
+  for svc in "${GUI_SERVICES[@]}"; do
+    if grep -qE "\b${svc//-/\\-}\.service\b" "$file" 2>/dev/null; then
       return 0
     fi
   done
@@ -63,16 +101,24 @@ for file in ~/.local/share/omarchy/migrations/*.sh; do
   if [[ ! -f $STATE_DIR/$filename && ! -f $STATE_DIR/skipped/$filename ]]; then
     # Skip migrations on headless that:
     # 1. Use GUI-only commands that don't exist on headless
-    # 2. Require interactive input (no TTY available)
+    # 2. Try to install GUI packages (sddm, plymouth, etc.)
+    # 3. Reference GUI-only systemd services
+    # 4. Require interactive input (no TTY available)
     if [[ $HEADLESS_MODE == true ]]; then
+      skip_reason=""
+      
       if uses_gui_only_commands "$file"; then
-        echo -e "\e[33m\nSkipping migration (${filename%.sh}) - requires GUI-only commands not available on headless\e[0m"
-        touch "$STATE_DIR/skipped/$filename"
-        continue
+        skip_reason="requires GUI-only commands"
+      elif installs_gui_packages "$file"; then
+        skip_reason="installs GUI packages not needed on headless"
+      elif references_gui_services "$file"; then
+        skip_reason="references GUI-only services"
+      elif is_interactive_migration "$file"; then
+        skip_reason="requires interactive input"
       fi
       
-      if is_interactive_migration "$file"; then
-        echo -e "\e[33m\nSkipping interactive migration (${filename%.sh}) - not supported on headless\e[0m"
+      if [[ -n $skip_reason ]]; then
+        echo -e "\e[33m\nSkipping migration (${filename%.sh}) - $skip_reason\e[0m"
         touch "$STATE_DIR/skipped/$filename"
         continue
       fi
