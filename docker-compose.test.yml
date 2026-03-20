@@ -1,0 +1,17 @@
+services:
+  omarchy-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    container_name: omarchy-headless-test
+    volumes:
+      # Mount current directory to omarchy path in container
+      - .:/home/tester/.local/share/omarchy:cached
+    environment:
+      - OMARCHY_PATH=/home/tester/.local/share/omarchy
+      - OMARCHY_INSTALL=/home/tester/.local/share/omarchy/install
+      - TERM=xterm-256color
+    working_dir: /home/tester/.local/share/omarchy
+    stdin_open: true
+    tty: true
+    command: /bin/bash

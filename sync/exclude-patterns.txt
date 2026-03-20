@@ -1,0 +1,56 @@
+# GUI Configuration Directories
+config/hypr/
+config/waybar/
+config/walker/
+config/mako/
+config/swayosd/
+config/alacritty/
+config/kitty/
+config/ghostty/
+config/imv/
+config/hyprland-preview-share-picker/
+default/hypr/
+default/mako/
+default/waybar/
+default/walker/
+default/themed/
+default/plymouth/
+default/sddm/
+default/limine/
+install/login/
+applications/
+
+# GUI-specific Commands (keep bin/ prefix for accuracy)
+bin/omarchy-brightness-*
+bin/omarchy-cmd-screenshot
+bin/omarchy-cmd-screenrecord
+bin/omarchy-cmd-screensaver
+bin/omarchy-hyprland-*
+bin/omarchy-restart-*
+bin/omarchy-refresh-hypr*
+bin/omarchy-refresh-waybar
+bin/omarchy-refresh-walker
+bin/omarchy-refresh-mako
+bin/omarchy-toggle-*
+bin/omarchy-launch-*
+bin/omarchy-cmd-share
+bin/omarchy-config-direct-boot
+
+# Theme/Font commands (keep but modify)
+# bin/omarchy-theme-* - Keep but remove wallpaper logic
+# bin/omarchy-font-set - Keep as-is (terminal fonts matter)
+
+# Package lists (will filter instead of delete)
+# install/omarchy-base.packages
+# install/omarchy-other.packages
+
+# GUI Install Scripts
+install/config/remove-fcitx5-autostart.sh
+install/config/hardware/ignore-power-button.sh
+install/config/hardware/bluetooth.sh
+install/config/hardware/printer.sh
+install/config/hardware/nvidia.sh
+install/config/hardware/vulkan.sh
+
+# Keep but review:
+# install/config/hardware/* - Most server hardware fixes are useful

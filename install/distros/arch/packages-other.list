@@ -1,0 +1,40 @@
+# Packages installed outside of install/packages.sh or optional packages
+# Utilized by ISO builder to ensure package availability in the ISO
+
+autoconf-archive
+base
+base-devel
+btrfs-progs
+dart
+dkms
+git
+gst-plugin-pipewire
+htop
+intltool
+iwd
+jdk-openjdk
+libpulse
+libsass
+limine
+limine-mkinitcpio-hook
+limine-snapper-sync
+linux
+linux-firmware
+linux-headers
+pipewire
+pipewire-alsa
+pipewire-jack
+pipewire-pulse
+sassc
+snapper
+webp-pixbuf-loader
+wget
+yay-debug
+yt6801-dkms
+zram-generator
+
+# Vulkan drivers (auto-detected by hardware)
+
+# Surface laptop support packages
+
+# T2 MacBook support packages

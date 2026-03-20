@@ -1,0 +1,47 @@
+# Omarchy Headless - Testing Environment
+#
+# This Dockerfile sets up an Arch Linux environment for testing omarchy-headless.
+# It installs all system dependencies but does NOT copy the code.
+# Use docker-compose.yml to mount your local repo.
+
+FROM archlinux:latest
+
+# Update system and install base dependencies
+RUN pacman -Syu --noconfirm --needed \
+    base-devel \
+    git \
+    sudo \
+    curl \
+    && pacman -Scc --noconfirm
+
+# Add Omarchy repository to pacman.conf (required for omarchy-* packages)
+RUN echo "" >> /etc/pacman.conf && \
+    echo "[omarchy]" >> /etc/pacman.conf && \
+    echo "SigLevel = Optional TrustAll" >> /etc/pacman.conf && \
+    echo "Server = https://pkgs.omarchy.org/stable/\$arch" >> /etc/pacman.conf && \
+    pacman -Sy --noconfirm
+
+# Create test user (required since omarchy scripts use sudo)
+# Using UID 1000 to match typical host user
+RUN useradd -m -u 1000 -G wheel -s /bin/bash tester && \
+    echo "tester ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
+    mkdir -p /home/tester/.local/share && \
+    chown -R tester:tester /home/tester
+
+# Install yay (AUR helper) as tester user
+# makepkg cannot run as root, so we switch to tester user
+RUN su - tester -c "cd /tmp && \
+    git clone https://aur.archlinux.org/yay.git && \
+    cd yay && \
+    makepkg -s --noconfirm" && \
+    pacman -U --noconfirm /tmp/yay/yay-*.pkg.tar.zst && \
+    rm -rf /tmp/yay
+
+# Set working directory
+WORKDIR /home/tester/.local/share/omarchy
+
+# Switch to test user
+USER tester
+
+# Default command: bash shell
+CMD ["/bin/bash"]
